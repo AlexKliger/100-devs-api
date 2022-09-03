@@ -4,37 +4,50 @@ const cors = require('cors')
 const PORT = 8000
 
 app.use(cors())
+app.use(express.json())
 
-const rappers = {
-    '21 savage': {
-        'age': 29,
-        'birthName': 'Shéyaa Bin Abraham-Joseph',
-        'birthLocation': 'London, England'
+const pokemonCaught = {
+    'pikachu': {
+        numberCaught: 12,
+        type: 'electric'
     },
-    'chance the rapper':{
-        'age': 29,
-        'birthName': 'Chancelor Bennett',
-        'birthLocation': 'Chicago, Illinois' 
+    'bulbasaur': {
+        numberCaught: 5,
+        type: 'grass/poison'
     },
-    'unknown':{
-        'age': 0,
-        'birthName': 'unknown',
-        'birthLocation': 'unknown'
+    'snorlax': {
+        numberCaught: 1,
+        type: 'normal'
+    },
+    'undocumented pokemon': {
+        numberCaught: null,
+        type: '???'
     }
 }
-app.get('/', (request, response)=>{
-    response.sendFile(__dirname + '/index.html')
+app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/index.html')
 })
 
-app.get('/api/:name',(request,response)=>{
-    const rapperName = request.params.name.toLowerCase()
+app.get('/api/:name',(req, res)=>{
+    const pokemonName = req.params.name.toLowerCase()
+    pokemonCaught[pokemonName] ? res.json(pokemonCaught[pokemonName]) : res.json(pokemonCaught['undocumented pokemon'])
+})
 
-    if( rappers[rapperName] ){
-        response.json(rappers[rapperName])
-    }else{
-        response.json(rappers['unknown'])
+app.delete('/api/:name', (req, res) => {
+    const pokemonName = req.params.name.toLowerCase()
+    delete pokemonCaught[pokemonName]
+    res.json(pokemonCaught)
+})
+
+app.post('/api/:name', (req, res) => {
+    const pokemonName = req.params.name.toLowerCase()
+    const aPokemon = pokemonCaught[pokemonName]
+    if (aPokemon) {
+        pokemonCaught[pokemonName].numberCaught++
+    } else {
+        pokemonCaught[pokemonName] = {numberCaught: 1, type: req.body.type || 'not provided'}
     }
-    
+    res.json(pokemonCaught[pokemonName])
 })
 
 app.listen(process.env.PORT || PORT, ()=>{
